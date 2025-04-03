@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# TalkToFiles
-=======
 # TalkToFiles
 
 A document QA system that lets you query and chat with your PDF and text files.
@@ -79,4 +76,3 @@ http://localhost:8001
 ## Adding Documents
 
 Place your PDF or TXT files in the configured `WATCH_DIRECTORY`. The application will automatically process new files and make them available for querying.
->>>>>>> 0aabad8 (initial commit)
