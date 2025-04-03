@@ -1,7 +1,0 @@
-This is a sample text file for TalkToFiles.
-
-You can add your own PDF or text files to this directory,
-and they will be automatically processed and made searchable.
-
-Try asking questions about this text to test the system!
-Red is a great color.
