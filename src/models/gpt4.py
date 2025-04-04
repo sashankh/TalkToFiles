@@ -23,7 +23,8 @@ class DocumentQueryModel:
         - Answer only based on the context provided
         - If you don't know the answer or the context doesn't contain relevant information, say so
         - Include relevant source information in your response
-        - Be concise and accurate"""
+        - Be concise and accurate
+        """
         
         # Format the context from relevant documents
         context = self._format_context(relevant_docs)

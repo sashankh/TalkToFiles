@@ -166,8 +166,10 @@ class QdrantDB:
             print(f"Found {count} points in the database")
             
             # Dictionary to track unique documents by their file path
-            # Using a dictionary to store complete document info rather than just a set of paths
             unique_docs = {}
+            
+            # Track which files we've already reported as found
+            reported_files = set()
             
             # Scroll through all points in batches
             offset = None
@@ -192,29 +194,44 @@ class QdrantDB:
                     if not point.payload:
                         continue
                     
-                    # Extract source path (full file path) and normalize it
+                    # Extract document identifying information - we need title, source path, and ignore chunk_id
                     source_path = point.payload.get('source', '')
+                    title = point.payload.get('title', '')
+                    
                     if not source_path:
                         continue
                         
-                    # Normalize path for consistent comparison (remove any potential duplicates with different path formats)
-                    normalized_path = os.path.normpath(source_path)
+                    # Clean up the path for better matching
+                    # Remove any path variations for the same file
+                    normalized_path = os.path.normpath(source_path).replace('\\', '/')
+                    base_filename = os.path.basename(normalized_path)
+                    
+                    # Use the normalized path as the key to identify unique documents
+                    # This way all chunks from the same document will map to the same key
+                    doc_key = normalized_path
                     
                     # If we haven't seen this document yet, add it to our unique docs
-                    if normalized_path not in unique_docs:
+                    if doc_key not in unique_docs:
                         # Get additional document metadata
-                        title = point.payload.get('title', os.path.basename(normalized_path))
                         file_type = point.payload.get('file_type', '')
                         timestamp = point.payload.get('timestamp', '')
                         
-                        # Store the document info
-                        unique_docs[normalized_path] = {
+                        # If no title, use filename
+                        if not title:
+                            title = base_filename
+                            
+                        # Create a document record with the first chunk we find
+                        unique_docs[doc_key] = {
                             'source': normalized_path,
                             'title': title,
                             'file_type': file_type,
                             'timestamp': timestamp
                         }
-                        print(f"Found unique document: {title}")
+                        
+                        # Only print the "found" message once per file
+                        if normalized_path not in reported_files:
+                            print(f"Found document: {title} at {normalized_path}")
+                            reported_files.add(normalized_path)
                 
                 # Update offset for next batch
                 offset = response[1]
@@ -228,6 +245,9 @@ class QdrantDB:
             documents.sort(key=lambda x: x['title'].lower())
             
             print(f"Found {len(documents)} unique documents")
+            for doc in documents:
+                print(f"Final document list: {doc['title']} ({doc['source']})")
+            
             return documents
             
         except Exception as e:
