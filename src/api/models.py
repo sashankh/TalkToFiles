@@ -17,12 +17,11 @@ class ChatHistoryRequest(BaseModel):
     top_k: int = 5
 
 
-class SourceDocument(BaseModel):
-    text: str
-    source: str
-    similarity: float
+class FileUploadResponse(BaseModel):
+    filename: str
+    message: str
 
 
 class QueryResponse(BaseModel):
     answer: str
-    source_documents: List[SourceDocument] = []
+    source_documents: List[Dict[str, Any]] = []

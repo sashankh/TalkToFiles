@@ -297,3 +297,73 @@ body {
     color: var(--text-light);
     font-style: italic;
 }
+
+/* File Upload Section */
+.upload-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.upload-section h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.file-input-wrapper {
+    margin-bottom: 1rem;
+}
+
+#file-upload {
+    display: none;
+}
+
+.file-label {
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.file-label:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#file-name {
+    display: block;
+    font-size: 0.75rem;
+    word-break: break-all;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+#upload-button {
+    width: 100%;
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+#upload-button:hover {
+    background-color: var(--primary-light);
+}
+
+#upload-button:disabled {
+    background-color: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+}
+
+#upload-status {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    text-align: center;
+}

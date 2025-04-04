@@ -16,6 +16,20 @@
                 <p>Chat with your PDF and TXT documents</p>
                 <p class="file-directory">Watching: <code>{{ watch_directory }}</code></p>
             </div>
+
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <h3>Upload Document</h3>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="file-upload" name="file" accept=".pdf,.txt">
+                        <label for="file-upload" class="file-label">Choose File</label>
+                        <span id="file-name">No file chosen</span>
+                    </div>
+                    <button type="submit" id="upload-button">Upload</button>
+                </form>
+                <div id="upload-status"></div>
+            </div>
         </div>
         
         <div class="main">
