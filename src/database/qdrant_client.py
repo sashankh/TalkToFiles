@@ -140,3 +140,98 @@ class QdrantDB:
         except Exception as e:
             print(f"Unexpected error during search: {e}")
             return []
+            
+    def get_document_list(self) -> List[Dict[str, Any]]:
+        """
+        Get a list of all unique documents in the database
+        
+        Returns:
+            List of dictionaries containing document information
+        """
+        try:
+            # Check if collection exists
+            collections = self.client.get_collections().collections
+            collection_names = [c.name for c in collections]
+            
+            if COLLECTION_NAME not in collection_names:
+                print(f"Collection {COLLECTION_NAME} does not exist")
+                return []
+                
+            # Count documents to check if database is empty
+            count = self.client.count(collection_name=COLLECTION_NAME).count
+            if count == 0:
+                print("Database is empty, no documents to list")
+                return []
+                
+            print(f"Found {count} points in the database")
+            
+            # Dictionary to track unique documents by their file path
+            # Using a dictionary to store complete document info rather than just a set of paths
+            unique_docs = {}
+            
+            # Scroll through all points in batches
+            offset = None
+            batch_size = 100
+            
+            while True:
+                response = self.client.scroll(
+                    collection_name=COLLECTION_NAME,
+                    limit=batch_size,
+                    offset=offset,
+                    with_payload=True,
+                    with_vectors=False
+                )
+                
+                points = response[0]
+                if not points:
+                    break
+                    
+                print(f"Processing {len(points)} points from database")
+                
+                for point in points:
+                    if not point.payload:
+                        continue
+                    
+                    # Extract source path (full file path) and normalize it
+                    source_path = point.payload.get('source', '')
+                    if not source_path:
+                        continue
+                        
+                    # Normalize path for consistent comparison (remove any potential duplicates with different path formats)
+                    normalized_path = os.path.normpath(source_path)
+                    
+                    # If we haven't seen this document yet, add it to our unique docs
+                    if normalized_path not in unique_docs:
+                        # Get additional document metadata
+                        title = point.payload.get('title', os.path.basename(normalized_path))
+                        file_type = point.payload.get('file_type', '')
+                        timestamp = point.payload.get('timestamp', '')
+                        
+                        # Store the document info
+                        unique_docs[normalized_path] = {
+                            'source': normalized_path,
+                            'title': title,
+                            'file_type': file_type,
+                            'timestamp': timestamp
+                        }
+                        print(f"Found unique document: {title}")
+                
+                # Update offset for next batch
+                offset = response[1]
+                if offset is None:
+                    break
+            
+            # Convert the dictionary of unique documents to a list
+            documents = list(unique_docs.values())
+            
+            # Sort documents by title for consistent display
+            documents.sort(key=lambda x: x['title'].lower())
+            
+            print(f"Found {len(documents)} unique documents")
+            return documents
+            
+        except Exception as e:
+            print(f"Error getting document list: {e}")
+            import traceback
+            traceback.print_exc()
+            return []

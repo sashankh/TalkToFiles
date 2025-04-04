@@ -24,4 +24,8 @@ class FileUploadResponse(BaseModel):
 
 class QueryResponse(BaseModel):
     answer: str
-    source_documents: List[Dict[str, Any]] = []
+    source_documents: List[Dict[str, Any]]
+
+
+class DocumentListResponse(BaseModel):
+    documents: List[Dict[str, Any]]

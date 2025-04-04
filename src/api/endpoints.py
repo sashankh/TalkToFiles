@@ -4,7 +4,10 @@ import os
 import shutil
 from pathlib import Path
 
-from api.models import QueryRequest, QueryResponse, ChatHistoryRequest, FileUploadResponse
+from api.models import (
+    QueryRequest, QueryResponse, ChatHistoryRequest, 
+    FileUploadResponse, DocumentListResponse
+)
 from embeddings.azure_openai import AzureOpenAIClient
 from database.qdrant_client import QdrantDB
 from models.gpt4 import DocumentQueryModel
@@ -194,3 +197,14 @@ async def upload_file(
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=error_msg)
+
+
+@router.get("/documents", response_model=DocumentListResponse)
+async def get_documents(
+    db: QdrantDB = Depends(get_qdrant_db)
+):
+    """
+    Get a list of all indexed documents
+    """
+    documents = db.get_document_list()
+    return DocumentListResponse(documents=documents)

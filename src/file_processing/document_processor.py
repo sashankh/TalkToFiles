@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Dict, List, Tuple
+import datetime
 
 from file_processing.pdf_reader import read_pdf
 from file_processing.txt_reader import read_txt
@@ -34,10 +35,11 @@ def process_document(file_path: str) -> List[Tuple[str, str]]:
     result = []
     for i, chunk in enumerate(text_chunks):
         metadata = {
-            "source": file_name,
+            "source": str(file_path),  # Store the full path
+            "title": file_name,  # Add a title field for display purposes
             "chunk_id": i,
-            "file_path": str(file_path),
-            "file_type": file_ext
+            "file_type": file_ext,
+            "timestamp": datetime.datetime.now().isoformat()  # Add timestamp for sorting
         }
         result.append((chunk, metadata))
     

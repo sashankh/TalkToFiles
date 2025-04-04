@@ -82,11 +82,19 @@ def process_file(file_path: str, db: QdrantDB, openai_client: AzureOpenAIClient)
 def start_file_watcher(db: QdrantDB, openai_client: AzureOpenAIClient):
     print(f"Starting file watcher for directory: {WATCH_DIRECTORY}")
     
-    # Process existing files
-    process_existing_files(db, openai_client)
+    # Create a set of already processed files
+    processed_files = set()
+    
+    # Process existing files and add them to processed_files set
+    print(f"Processing existing files in {WATCH_DIRECTORY}")
+    for file in Path(WATCH_DIRECTORY).glob("*.*"):
+        if file.suffix.lower() in ['.pdf', '.txt']:
+            file_path = str(file)
+            print(f"Found existing file: {file}")
+            process_file(file_path, db, openai_client)
+            processed_files.add(file_path)
     
     def watch_directory():
-        processed_files = set()
         while True:
             for file in Path(WATCH_DIRECTORY).glob("*.*"):
                 if file.suffix.lower() in ['.pdf', '.txt'] and str(file) not in processed_files:
@@ -104,16 +112,6 @@ if __name__ == "__main__":
     # Ensure the watch directory exists
     os.makedirs(WATCH_DIRECTORY, exist_ok=True)
     
-    # Add a sample text file if the directory was just created
-    sample_file_path = Path(WATCH_DIRECTORY) / "sample.txt"
-    if not sample_file_path.exists():
-        with open(sample_file_path, "w", encoding="utf-8") as f:
-            f.write("This is a sample text file for TalkToFiles.\n\n")
-            f.write("You can add your own PDF or text files to this directory,\n")
-            f.write("and they will be automatically processed and made searchable.\n\n")
-            f.write("Try asking questions about this text to test the system!")
-        print(f"Added sample text file at: {sample_file_path}")
-    
     # Initialize clients
     db = QdrantDB()
     openai_client = AzureOpenAIClient()
@@ -125,6 +123,9 @@ if __name__ == "__main__":
         # Start the API server
         uvicorn.run(app, host=API_HOST, port=API_PORT)
     except KeyboardInterrupt:
-        print("Shutting down file watcher...")
-    
-    watcher_thread.join()
+        print("Shutting down file watcher and server...")
+        # Adding a cleaner way to exit the program
+        sys.exit(0)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)

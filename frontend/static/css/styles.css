@@ -29,16 +29,24 @@ body {
     display: flex;
     height: 100vh;
     position: relative;
+    overflow: hidden; /* Prevent any overflow at container level */
 }
 
 /* Sidebar */
 .sidebar {
     width: 300px;
+    min-width: 300px; /* Enforce minimum width */
+    max-width: 300px; /* Enforce maximum width */
     background-color: var(--sidebar-bg);
     color: white;
     padding: 1.5rem;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+    overflow-y: auto; /* Allow vertical scrolling if needed */
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    position: relative; /* For absolute positioning of children if needed */
+    z-index: 10; /* Ensure sidebar stays on top */
 }
 
 .logo h1 {
@@ -73,6 +81,9 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
+    overflow: hidden; /* Contain overflow */
+    min-width: 0; /* Allow main area to shrink */
+    border-left: 2px solid rgba(255, 255, 255, 0.1); /* Add visual separation */
 }
 
 .chat-container {
@@ -366,4 +377,92 @@ body {
     margin-top: 0.75rem;
     font-size: 0.75rem;
     text-align: center;
+}
+
+/* Document List Section */
+.document-list-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.document-list-section h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#refresh-documents {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+#refresh-docs-btn {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+#refresh-docs-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+#document-list {
+    overflow-y: auto;
+    max-height: 220px;
+}
+
+.loading-documents,
+.no-documents,
+.error {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.doc-list {
+    list-style: none;
+    padding: 0;
+}
+
+.doc-item {
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    width: 100%; /* Ensure the item takes full width of its container */
+    max-width: 100%; /* Don't exceed container width */
+    overflow: hidden; /* Hide overflow content */
+}
+
+.doc-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.doc-icon {
+    font-size: 1rem;
+}
+
+.doc-title {
+    font-size: 0.875rem;
+    word-break: break-all; /* Break words at any character */
+    overflow-wrap: break-word; /* Helps with long words */
+    white-space: normal; /* Allow text to wrap */
+    overflow: visible; /* Allow content to be visible */
+    flex: 1; /* Take up available space in flex container */
+    line-height: 1.2; /* Keep line height reasonable for wrapped text */
 }

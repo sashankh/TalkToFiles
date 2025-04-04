@@ -7,6 +7,10 @@ const sourcesPanel = document.getElementById('sources-panel');
 const closeSources = document.getElementById('close-sources');
 const sourcesContent = document.getElementById('sources-content');
 
+// Document List Elements
+const documentList = document.getElementById('document-list');
+const refreshDocsBtn = document.getElementById('refresh-docs-btn');
+
 // File Upload Elements
 const uploadForm = document.getElementById('upload-form');
 const fileUpload = document.getElementById('file-upload');
@@ -17,6 +21,68 @@ const uploadStatus = document.getElementById('upload-status');
 // Chat history for context
 let chatHistory = [];
 
+// Function to fetch and display the document list
+function fetchDocumentList() {
+    // Show loading state
+    documentList.innerHTML = '<p class="loading-documents">Loading documents...</p>';
+    
+    // Fetch documents from API
+    fetch('/api/documents')
+        .then(response => response.json())
+        .then(data => {
+            // Clear loading message
+            documentList.innerHTML = '';
+            
+            if (data.documents && data.documents.length > 0) {
+                console.log('Documents retrieved:', data.documents);
+                
+                // Create a list for the documents
+                const docListElement = document.createElement('ul');
+                docListElement.classList.add('doc-list');
+                
+                // Add each document to the list
+                data.documents.forEach(doc => {
+                    const docItem = document.createElement('li');
+                    docItem.classList.add('doc-item');
+                    
+                    const docIcon = document.createElement('span');
+                    docIcon.classList.add('doc-icon');
+                    
+                    // Add different icon based on file type
+                    const fileType = doc.file_type || '';
+                    if (fileType.includes('pdf')) {
+                        docIcon.textContent = '📄';
+                    } else if (fileType.includes('txt')) {
+                        docIcon.textContent = '📝';
+                    } else {
+                        docIcon.textContent = '📑';
+                    }
+                    
+                    const docTitle = document.createElement('span');
+                    docTitle.classList.add('doc-title');
+                    docTitle.textContent = doc.title || 'Unknown document';
+                    
+                    docItem.appendChild(docIcon);
+                    docItem.appendChild(docTitle);
+                    docListElement.appendChild(docItem);
+                });
+                
+                documentList.appendChild(docListElement);
+            } else {
+                console.log('No documents found in the response');
+                // No documents found
+                documentList.innerHTML = '<p class="no-documents">No documents indexed yet. Upload or add documents to the watch directory.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching documents:', error);
+            documentList.innerHTML = '<p class="error">Error loading documents. Please try again.</p>';
+        });
+}
+
+// Event listener for refresh button
+refreshDocsBtn.addEventListener('click', fetchDocumentList);
+
 // Function to auto-resize textarea as user types
 userInput.addEventListener('input', function() {
     // Reset height to auto to get the correct scrollHeight
@@ -25,6 +91,15 @@ userInput.addEventListener('input', function() {
     // Set new height based on scrollHeight (with a max of 200px)
     const newHeight = Math.min(this.scrollHeight, 200);
     this.style.height = newHeight + 'px';
+});
+
+// Add Enter key functionality to send messages
+userInput.addEventListener('keydown', function(e) {
+    // Check if Enter key was pressed without Shift (Shift+Enter allows for newlines)
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault(); // Prevent default behavior (newline)
+        submitButton.click(); // Trigger the submit button click
+    }
 });
 
 // Function to add a message to the chat
@@ -188,6 +263,8 @@ closeSources.addEventListener('click', function() {
 // Initialize - autofocus on input
 document.addEventListener('DOMContentLoaded', function() {
     userInput.focus();
+    // Load the document list when the page loads
+    fetchDocumentList();
 });
 
 // File Upload Functionality
@@ -246,6 +323,9 @@ uploadForm.addEventListener('submit', async function(e) {
             // Show success message in chat
             addMessage(`I've uploaded ${file.name} and processed it for you. You can now ask questions about this document.`, 'user');
             addMessage('The document has been successfully processed. I can now answer questions about it.', 'assistant');
+            
+            // Refresh the document list
+            fetchDocumentList();
         } else {
             uploadStatus.textContent = result.detail || 'Error uploading file';
             uploadStatus.style.color = '#ff6b6b';
