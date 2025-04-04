@@ -2,8 +2,8 @@ import os
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from src.file_processing.pdf_reader import read_pdf
-from src.file_processing.txt_reader import read_txt
+from file_processing.pdf_reader import read_pdf
+from file_processing.txt_reader import read_txt
 
 
 def process_document(file_path: str) -> List[Tuple[str, str]]:

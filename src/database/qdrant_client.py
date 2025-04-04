@@ -99,20 +99,44 @@ class QdrantDB:
         Returns:
             List of dictionaries containing text, metadata, and similarity score
         """
-        search_results = self.client.search(
-            collection_name=COLLECTION_NAME,
-            query_vector=query_vector,
-            limit=limit
-        )
-        
-        results = []
-        for result in search_results:
-            payload = result.payload
-            text = payload.pop("text")
-            results.append({
-                "text": text,
-                "metadata": payload,
-                "similarity": result.score
-            })
+        try:
+            search_results = self.client.search(
+                collection_name=COLLECTION_NAME,
+                query_vector=query_vector,
+                limit=limit
+            )
             
-        return results
+            results = []
+            for result in search_results:
+                payload = result.payload
+                text = payload.pop("text")
+                results.append({
+                    "text": text,
+                    "metadata": payload,
+                    "similarity": result.score
+                })
+                
+            return results
+        except ValueError as e:
+            # Handle shape mismatch errors that can occur after adding new documents
+            print(f"Error in vector search: {e}")
+            print("Attempting to recreate the collection...")
+            
+            try:
+                # Delete and recreate the collection
+                if COLLECTION_NAME in [c.name for c in self.client.get_collections().collections]:
+                    self.client.delete_collection(collection_name=COLLECTION_NAME)
+                    print(f"Collection {COLLECTION_NAME} was deleted")
+                
+                # Recreate collection
+                self._init_collection()
+                print(f"Collection {COLLECTION_NAME} was recreated successfully")
+                
+                # Return empty results since we've reset the collection
+                return []
+            except Exception as recreate_error:
+                print(f"Failed to recreate collection: {recreate_error}")
+                return []
+        except Exception as e:
+            print(f"Unexpected error during search: {e}")
+            return []

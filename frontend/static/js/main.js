@@ -7,6 +7,13 @@ const sourcesPanel = document.getElementById('sources-panel');
 const closeSources = document.getElementById('close-sources');
 const sourcesContent = document.getElementById('sources-content');
 
+// File Upload Elements
+const uploadForm = document.getElementById('upload-form');
+const fileUpload = document.getElementById('file-upload');
+const fileName = document.getElementById('file-name');
+const uploadButton = document.getElementById('upload-button');
+const uploadStatus = document.getElementById('upload-status');
+
 // Chat history for context
 let chatHistory = [];
 
@@ -181,4 +188,74 @@ closeSources.addEventListener('click', function() {
 // Initialize - autofocus on input
 document.addEventListener('DOMContentLoaded', function() {
     userInput.focus();
+});
+
+// File Upload Functionality
+fileUpload.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        fileName.textContent = file.name;
+    } else {
+        fileName.textContent = 'No file chosen';
+    }
+});
+
+uploadForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const file = fileUpload.files[0];
+    if (!file) {
+        uploadStatus.textContent = 'Please select a file to upload';
+        uploadStatus.style.color = '#ff6b6b';
+        return;
+    }
+    
+    // Only allow PDF and TXT files
+    if (!file.name.match(/\.(pdf|txt)$/i)) {
+        uploadStatus.textContent = 'Please select a PDF or TXT file';
+        uploadStatus.style.color = '#ff6b6b';
+        return;
+    }
+    
+    // Disable upload button during upload
+    uploadButton.disabled = true;
+    uploadStatus.textContent = 'Uploading...';
+    uploadStatus.style.color = 'rgba(255, 255, 255, 0.7)';
+    
+    try {
+        // Create a FormData object and append the file
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Send the file to the server
+        const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            uploadStatus.textContent = 'File uploaded successfully!';
+            uploadStatus.style.color = '#4ade80';
+            
+            // Reset the file input
+            fileUpload.value = '';
+            fileName.textContent = 'No file chosen';
+            
+            // Show success message in chat
+            addMessage(`I've uploaded ${file.name} and processed it for you. You can now ask questions about this document.`, 'user');
+            addMessage('The document has been successfully processed. I can now answer questions about it.', 'assistant');
+        } else {
+            uploadStatus.textContent = result.detail || 'Error uploading file';
+            uploadStatus.style.color = '#ff6b6b';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        uploadStatus.textContent = 'Error uploading file';
+        uploadStatus.style.color = '#ff6b6b';
+    }
+    
+    // Re-enable upload button
+    uploadButton.disabled = false;
 });
